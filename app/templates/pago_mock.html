@@ -1,14 +1,114 @@
 {% extends "base.html" %}
-{% block title %}Pago - Sandbox{% endblock %}
+{% block title %}Pagar Reserva - AeroReserva{% endblock %}
 {% block content %}
-<h2>Pagar Reserva</h2>
-<div class="card">
-  <div class="card-body">
-    <p>Código: <strong>{{ reserva.codigo_reserva }}</strong></p>
-    <p>Total: <strong>${{ reserva.precio_total }}</strong></p>
-    <form method="post" action="/reservas/confirmar/{{ reserva.id }}">
-      <button class="btn btn-primary">Pagar (Sandbox)</button>
-    </form>
-  </div>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-credit-card me-2"></i>Procesar Pago (Sandbox)
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Información de la Reserva -->
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-info-circle me-2"></i>Información de tu Reserva
+                        </h5>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-2">
+                                    <strong>Código:</strong> {{ reserva.codigo_reserva }}
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Ruta:</strong> {{ vuelo.origen }} → {{ vuelo.destino }}
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Aerolínea:</strong> {{ vuelo.aerolinea }}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-2">
+                                    <strong>Pasajeros:</strong> {{ reserva.num_pasajeros }}
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Duración:</strong> {{ vuelo.duracion }}
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Estado:</strong> 
+                                    <span class="badge bg-warning text-dark">{{ reserva.estado }}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total a Pagar -->
+                    <div class="text-center my-4 p-4 bg-light rounded">
+                        <h2 class="text-muted mb-2">Total a Pagar</h2>
+                        <h1 class="display-3 text-success mb-0">
+                            <strong>${{ reserva.precio_total }}</strong>
+                        </h1>
+                        <p class="text-muted">Incluye todos los impuestos y tasas</p>
+                    </div>
+
+                    <!-- Información de Sandbox -->
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Modo Sandbox (Desarrollo)
+                        </h6>
+                        <p class="mb-0">
+                            Este es un entorno de pruebas. No se procesarán cargos reales. 
+                            Al hacer clic en "Pagar", la reserva se marcará como pagada automáticamente.
+                        </p>
+                    </div>
+
+                    <!-- Formulario de Pago Simulado -->
+                    <form method="post" action="/reservas/confirmar/{{ reserva.id }}">
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-credit-card me-2"></i>Número de Tarjeta (Simulado)
+                            </label>
+                            <input type="text" class="form-control" value="4242 4242 4242 4242" readonly>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-calendar me-2"></i>Fecha de Expiración
+                                </label>
+                                <input type="text" class="form-control" value="12/25" readonly>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-lock me-2"></i>CVV
+                                </label>
+                                <input type="text" class="form-control" value="123" readonly>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Confirmar Pago de ${{ reserva.precio_total }}
+                            </button>
+                            <a href="/reservas/mis-reservas" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Cancelar y Volver
+                            </a>
+                        </div>
+                    </form>
+
+                    <!-- Nota de Seguridad -->
+                    <div class="mt-4 text-center">
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Tus datos están protegidos con encriptación SSL
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
