@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from .base import Base
 from datetime import datetime
-from passlib.hash import bcrypt
+import bcrypt as bcrypt_module
 
 class Usuario(Base):
     __tablename__ = "usuarios"
@@ -13,28 +13,24 @@ class Usuario(Base):
     es_admin = Column(Boolean, default=False)
     fecha_registro = Column(DateTime, default=datetime.utcnow)
 
-    def set_password(self, password):
-        """Establece la contraseña hasheada, truncando a 72 bytes si es necesario"""
-        if isinstance(password, str):
-            # Convertir a bytes
-            password_bytes = password.encode('utf-8')
-            # Truncar a 72 bytes (límite de bcrypt)
-            if len(password_bytes) > 72:
-                password_bytes = password_bytes[:72]
-            # Convertir de vuelta a string
-            password = password_bytes.decode('utf-8', errors='ignore')
+    def set_password(self, password: str):
+        """Establece la contraseña hasheada usando bcrypt directamente"""
+        # Convertir a bytes y truncar a 72 bytes (límite de bcrypt)
+        password_bytes = password.encode('utf-8')[:72]
         
-        self.password_hash = bcrypt.hash(password)
+        # Hashear con bcrypt
+        hashed = bcrypt_module.hashpw(password_bytes, bcrypt_module.gensalt())
+        
+        # Guardar como string
+        self.password_hash = hashed.decode('utf-8')
 
-    def check_password(self, password):
-        """Verifica la contraseña, truncando a 72 bytes si es necesario"""
-        if isinstance(password, str):
-            # Convertir a bytes
-            password_bytes = password.encode('utf-8')
-            # Truncar a 72 bytes (límite de bcrypt)
-            if len(password_bytes) > 72:
-                password_bytes = password_bytes[:72]
-            # Convertir de vuelta a string
-            password = password_bytes.decode('utf-8', errors='ignore')
+    def check_password(self, password: str) -> bool:
+        """Verifica la contraseña usando bcrypt directamente"""
+        # Convertir a bytes y truncar a 72 bytes
+        password_bytes = password.encode('utf-8')[:72]
         
-        return bcrypt.verify(password, self.password_hash)
+        # Convertir hash guardado a bytes
+        hash_bytes = self.password_hash.encode('utf-8')
+        
+        # Verificar
+        return bcrypt_module.checkpw(password_bytes, hash_bytes)
