@@ -14,19 +14,27 @@ class Usuario(Base):
     fecha_registro = Column(DateTime, default=datetime.utcnow)
 
     def set_password(self, password):
-        # Truncar contraseña a 72 bytes para evitar error de bcrypt
+        """Establece la contraseña hasheada, truncando a 72 bytes si es necesario"""
         if isinstance(password, str):
+            # Convertir a bytes
             password_bytes = password.encode('utf-8')
+            # Truncar a 72 bytes (límite de bcrypt)
             if len(password_bytes) > 72:
                 password_bytes = password_bytes[:72]
-                password = password_bytes.decode('utf-8', 'ignore')
+            # Convertir de vuelta a string
+            password = password_bytes.decode('utf-8', errors='ignore')
+        
         self.password_hash = bcrypt.hash(password)
 
     def check_password(self, password):
-        # Truncar contraseña para verificación también
+        """Verifica la contraseña, truncando a 72 bytes si es necesario"""
         if isinstance(password, str):
+            # Convertir a bytes
             password_bytes = password.encode('utf-8')
+            # Truncar a 72 bytes (límite de bcrypt)
             if len(password_bytes) > 72:
                 password_bytes = password_bytes[:72]
-                password = password_bytes.decode('utf-8', 'ignore')
+            # Convertir de vuelta a string
+            password = password_bytes.decode('utf-8', errors='ignore')
+        
         return bcrypt.verify(password, self.password_hash)

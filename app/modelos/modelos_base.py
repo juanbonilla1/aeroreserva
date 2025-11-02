@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import OperationalError
 from .base import Base
-from ..config import settings
+from app.config import settings
 import time
 import logging
 
@@ -30,7 +30,7 @@ def create_engine_with_retry():
             return engine
         except OperationalError as e:
             if attempt < max_retries - 1:
-                logger.warning(f"⚠️  Intento {attempt + 1}/{max_retries} falló. Reintentando en {retry_delay}s...")
+                logger.warning(f"⚠️ Intento {attempt + 1}/{max_retries} falló. Reintentando en {retry_delay}s...")
                 time.sleep(retry_delay)
                 retry_delay *= 2
             else:
@@ -41,34 +41,90 @@ ENGINE = create_engine_with_retry()
 SessionLocal = sessionmaker(bind=ENGINE, autocommit=False, autoflush=False)
 
 def crear_tablas():
-    # Import aquí para evitar circularidad
+    """Crea las tablas y datos iniciales"""
     from .usuario import Usuario
     from .vuelo import Vuelo
     from .reserva import Reserva
     
+    # Crear todas las tablas
     Base.metadata.create_all(bind=ENGINE)
     
-    # seed admin and sample vuelos
     db = SessionLocal()
     try:
+        # Crear usuario admin si no existe
         admin = db.query(Usuario).filter(Usuario.email == settings.ADMIN_EMAIL).first()
         if not admin:
-            u = Usuario(nombre="Administrador", email=settings.ADMIN_EMAIL, telefono="", es_admin=True)
-            u.set_password(settings.ADMIN_PASSWORD)  # Ahora usa la contraseña truncada
-            db.add(u)
+            # Truncar la contraseña del admin a 72 caracteres
+            admin_password = settings.ADMIN_PASSWORD[:72]
+            
+            admin_user = Usuario(
+                nombre="Administrador",
+                email=settings.ADMIN_EMAIL,
+                telefono="",
+                es_admin=True
+            )
+            admin_user.set_password(admin_password)
+            db.add(admin_user)
             db.commit()
             logger.info("✅ Usuario admin creado exitosamente")
-        # Sample vuelos
-        if not db.query(Vuelo).first():
-            v1 = Vuelo(origen="Bogotá", destino="Medellín", aerolinea="AeroMock", precio=120, duracion="00:45", asientos_disponibles=50)
-            v2 = Vuelo(origen="Bogotá", destino="Cali", aerolinea="AeroMock", precio=140, duracion="01:05", asientos_disponibles=60)
-            v3 = Vuelo(origen="Cartagena", destino="Bogotá", aerolinea="AeroMock", precio=160, duracion="01:10", asientos_disponibles=80)
-            db.add_all([v1,v2,v3])
+        
+        # Crear vuelos de ejemplo si no existen
+        if db.query(Vuelo).count() == 0:
+            vuelos_ejemplo = [
+                Vuelo(
+                    origen="Bogotá",
+                    destino="Medellín",
+                    aerolinea="AeroReserva",
+                    precio=120,
+                    duracion="00:45",
+                    asientos_disponibles=50,
+                    activo=True
+                ),
+                Vuelo(
+                    origen="Bogotá",
+                    destino="Cali",
+                    aerolinea="AeroReserva",
+                    precio=140,
+                    duracion="01:05",
+                    asientos_disponibles=60,
+                    activo=True
+                ),
+                Vuelo(
+                    origen="Cartagena",
+                    destino="Bogotá",
+                    aerolinea="AeroReserva",
+                    precio=160,
+                    duracion="01:10",
+                    asientos_disponibles=80,
+                    activo=True
+                ),
+                Vuelo(
+                    origen="Medellín",
+                    destino="Cartagena",
+                    aerolinea="AeroReserva",
+                    precio=180,
+                    duracion="01:20",
+                    asientos_disponibles=70,
+                    activo=True
+                ),
+                Vuelo(
+                    origen="Cali",
+                    destino="San Andrés",
+                    aerolinea="AeroReserva",
+                    precio=250,
+                    duracion="02:00",
+                    asientos_disponibles=90,
+                    activo=True
+                )
+            ]
+            db.add_all(vuelos_ejemplo)
             db.commit()
             logger.info("✅ Vuelos de ejemplo creados exitosamente")
+        
         logger.info("✅ Tablas y datos iniciales creados exitosamente")
+        
     except Exception as e:
         logger.error(f"❌ Error creando tablas: {e}")
-        # No relanzar para permitir que la app continúe
+        db.rollback()
     finally:
         db.close()
