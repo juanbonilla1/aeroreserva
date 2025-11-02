@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Panel Admin{% endblock %}
+{% block content %}
+<h2>Panel Admin</h2>
+<table class="table">
+  <thead><tr><th>ID</th><th>Origen</th><th>Destino</th><th>Precio</th><th>Asientos</th></tr></thead>
+  <tbody>
+    {% for v in vuelos %}
+      <tr><td>{{ v.id }}</td><td>{{ v.origen }}</td><td>{{ v.destino }}</td><td>{{ v.precio }}</td><td>{{ v.asientos_disponibles }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

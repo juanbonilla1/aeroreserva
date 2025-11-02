@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Vuelos Disponibles ✈️ | AeroReserva{% endblock %}
+
+{% block content %}
+    <!-- Hero Section SIN IMAGEN -->
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="hero-title">✈️ Descubre tu próxima aventura</h1>
+            <p class="hero-subtitle">Las mejores rutas nacionales al mejor precio</p>
+        </div>
+    </section>
+
+    <!-- Vuelos Section -->
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h2 class="text-white mb-3 fw-bold">Vuelos Disponibles</h2>
+                <div class="badge bg-light text-dark fs-6 p-2">
+                    <i class="fas fa-plane me-1"></i>{{ vuelos|length }} vuelos encontrados
+                </div>
+            </div>
+        </div>
+
+        {% if vuelos %}
+        <div class="row g-4">
+            {% for vuelo in vuelos %}
+            <div class="col-xl-4 col-lg-6 col-md-6">
+                <div class="flight-card">
+                    <!-- Header de la card con gradiente -->
+                    <div class="card-header">
+                        <i class="fas fa-plane route-icon"></i>
+                        <h3 class="route-title">
+                            {{ vuelo.origen }} 
+                            <i class="fas fa-arrow-right mx-2"></i>
+                            {{ vuelo.destino }}
+                        </h3>
+                        <p class="airline">
+                            {{ vuelo.aerolinea or 'AeroReserva Airlines' }}
+                        </p>
+                    </div>
+                    
+                    <div class="flight-content">
+                        <!-- Detalles del vuelo -->
+                        <div class="flight-details">
+                            <div class="detail-item">
+                                <i class="fas fa-clock"></i>
+                                <span>{{ vuelo.duracion or '1h 30m' }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-plane-departure"></i>
+                                <span>Vuelo Directo</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-chair"></i>
+                                <span class="{% if vuelo.asientos_disponibles > 20 %}seats-available{% elif vuelo.asientos_disponibles > 10 %}seats-low{% else %}seats-few{% endif %}">
+                                    {{ vuelo.asientos_disponibles }} asientos
+                                </span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-luggage-cart"></i>
+                                <span>Equipaje 23kg</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Precio y formulario -->
+                        <div class="price-section">
+                            <div class="price">${{ vuelo.precio }}</div>
+                            <div class="price-label">Precio por persona • Tasas incluidas</div>
+                            
+                            <form action="/reservas/reservar/{{ vuelo.id }}" method="post" class="booking-form">
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-6">
+                                        <label class="form-label">Pasajeros</label>
+                                        <input type="number" name="num_pasajeros" 
+                                               class="form-control" min="1" max="{{ vuelo.asientos_disponibles }}" 
+                                               value="1" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <button class="btn btn-book" type="submit">
+                                            <i class="fas fa-ticket-alt me-2"></i>
+                                            Reservar
+                                        </button>
+                                    </div>
+                                </div>
+                                {% if vuelo.asientos_disponibles < 10 %}
+                                <div class="mt-2">
+                                    <small class="text-warning">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                        Pocos asientos disponibles
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <!-- Estado vacío -->
+        <div class="text-center py-5">
+            <div class="display-1 text-white mb-3">✈️</div>
+            <h3 class="text-white mb-3">No hay vuelos disponibles</h3>
+            <p class="text-white opacity-75 mb-4">Pronto tendremos nuevas rutas para ti</p>
+            <a href="/vuelos/crear" class="btn btn-light btn-lg">
+                <i class="fas fa-plus me-2"></i>Crear Primer Vuelo
+            </a>
+        </div>
+        {% endif %}
+    </div>
+{% endblock %}

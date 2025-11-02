@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Crear vuelo{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <h2>Crear nuevo vuelo</h2>
+    <form method="post" action="/vuelos/crear">
+      <div class="mb-3">
+        <label class="form-label">Origen</label>
+        <input class="form-control" name="origen" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Destino</label>
+        <input class="form-control" name="destino" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Aerolínea</label>
+        <input class="form-control" name="aerolinea">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Precio</label>
+        <input class="form-control" name="precio" type="number" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Duración</label>
+        <input class="form-control" name="duracion">
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Asientos</label>
+        <input class="form-control" name="asientos" type="number" value="100">
+      </div>
+      <button class="btn btn-success" type="submit">Crear vuelo</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Mis Reservas{% endblock %}
+{% block content %}
+<h2>Mis Reservas</h2>
+<div class="row">
+  {% for r in reservas %}
+    <div class="col-md-6">
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Código: {{ r.codigo_reserva }}</h5>
+          <p class="card-text">Vuelo: {{ r.vuelo.origen }} → {{ r.vuelo.destino }}</p>
+          <p class="card-text">Pasajeros: {{ r.num_pasajeros }}</p>
+          <p class="card-text">Total: ${{ r.precio_total }}</p>
+          <p class="card-text">Estado: {{ r.estado }} - Pagado: {{ r.pagado }}</p>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <p>No tienes reservas.</p>
+  {% endfor %}
+</div>
+{% endblock %}
