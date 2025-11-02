@@ -33,34 +33,73 @@
                             <i class="fas fa-search me-1"></i>Buscar Vuelos
                         </a>
                     </li>
+                    
+                    {% if usuario %}
                     <li class="nav-item">
                         <a class="nav-link" href="/reservas/mis-reservas">
                             <i class="fas fa-receipt me-1"></i>Mis Reservas
                         </a>
                     </li>
+                    {% endif %}
+                    
+                    {% if usuario and usuario.es_admin %}
                     <li class="nav-item">
                         <a class="nav-link" href="/vuelos/crear">
                             <i class="fas fa-plus-circle me-1"></i>Crear Vuelo
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-warning" href="/admin">
+                            <i class="fas fa-cog me-1"></i>Panel Admin
+                        </a>
+                    </li>
+                    {% endif %}
                 </ul>
                 
                 <ul class="navbar-nav">
+                    {% if usuario %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i>
+                            {{ usuario.nombre }}
+                            {% if usuario.es_admin %}
+                            <span class="badge bg-warning text-dark ms-1">Admin</span>
+                            {% endif %}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="/reservas/mis-reservas">
+                                    <i class="fas fa-receipt me-2"></i>Mis Reservas
+                                </a>
+                            </li>
+                            {% if usuario.es_admin %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="/admin">
+                                    <i class="fas fa-cog me-2"></i>Panel Admin
+                                </a>
+                            </li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="/logout">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="/login">
                             <i class="fas fa-sign-in-alt me-1"></i>Iniciar Sesión
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/registro">
+                        <a class="nav-link btn btn-primary text-white ms-2" href="/registro">
                             <i class="fas fa-user-plus me-1"></i>Registrarse
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-warning" href="/admin">
-                            <i class="fas fa-cog me-1"></i>Admin
-                        </a>
-                    </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>

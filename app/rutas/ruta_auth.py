@@ -30,7 +30,7 @@ def verificar_token(token: str):
 
 @router.get("/registro", response_class=HTMLResponse)
 async def registro_get(request: Request):
-    return templates.TemplateResponse("registro.html", {"request": request})
+    return templates.TemplateResponse("registro.html", {"request": request, "usuario": None})
 
 @router.post("/registro")
 async def registro_post(
@@ -44,22 +44,19 @@ async def registro_post(
     
     db = SessionLocal()
     try:
-        # Verificar si el email ya existe
         existe = db.query(Usuario).filter(Usuario.email == email).first()
         if existe:
             return templates.TemplateResponse(
                 "registro.html",
-                {"request": request, "error": "El correo ya está registrado"}
+                {"request": request, "error": "El correo ya está registrado", "usuario": None}
             )
         
-        # Crear usuario
         usuario = Usuario(nombre=nombre, email=email, telefono="")
         usuario.set_password(password)
         db.add(usuario)
         db.commit()
         db.refresh(usuario)
         
-        # Crear token y cookie
         token = crear_token(usuario.id)
         response = RedirectResponse(url="/vuelos", status_code=302)
         response.set_cookie("access_token", token, httponly=True)
@@ -69,14 +66,14 @@ async def registro_post(
         print(f"Error en registro: {e}")
         return templates.TemplateResponse(
             "registro.html",
-            {"request": request, "error": f"Error al registrar: {str(e)}"}
+            {"request": request, "error": f"Error al registrar: {str(e)}", "usuario": None}
         )
     finally:
         db.close()
 
 @router.get("/login", response_class=HTMLResponse)
 async def login_get(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse("login.html", {"request": request, "usuario": None})
 
 @router.post("/login")
 async def login_post(
@@ -94,7 +91,7 @@ async def login_post(
         if not usuario or not usuario.check_password(password):
             return templates.TemplateResponse(
                 "login.html",
-                {"request": request, "error": "Credenciales inválidas"}
+                {"request": request, "error": "Credenciales inválidas", "usuario": None}
             )
         
         token = crear_token(usuario.id)
@@ -106,7 +103,7 @@ async def login_post(
         print(f"Error en login: {e}")
         return templates.TemplateResponse(
             "login.html",
-            {"request": request, "error": f"Error al iniciar sesión: {str(e)}"}
+            {"request": request, "error": f"Error al iniciar sesión: {str(e)}", "usuario": None}
         )
     finally:
         db.close()
