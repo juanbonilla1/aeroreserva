@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Editar Vuelo - AeroReserva{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>Editar Vuelo #{{ vuelo.id }}
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" action="/vuelos/editar/{{ vuelo.id }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-plane-departure me-2"></i>Ciudad de Origen
+                                </label>
+                                <input type="text" name="origen" class="form-control" 
+                                       value="{{ vuelo.origen }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-plane-arrival me-2"></i>Ciudad de Destino
+                                </label>
+                                <input type="text" name="destino" class="form-control" 
+                                       value="{{ vuelo.destino }}" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-building me-2"></i>Aerolínea
+                            </label>
+                            <input type="text" name="aerolinea" class="form-control" 
+                                   value="{{ vuelo.aerolinea }}" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-dollar-sign me-2"></i>Precio (USD)
+                                </label>
+                                <input type="number" name="precio" class="form-control" 
+                                       value="{{ vuelo.precio }}" min="1" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-clock me-2"></i>Duración (ej: 01:30)
+                                </label>
+                                <input type="text" name="duracion" class="form-control" 
+                                       value="{{ vuelo.duracion }}" placeholder="01:30" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-chair me-2"></i>Asientos Disponibles
+                                </label>
+                                <input type="number" name="asientos" class="form-control" 
+                                       value="{{ vuelo.asientos_disponibles }}" min="0" required>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Nota:</strong> Los cambios se aplicarán inmediatamente y afectarán las nuevas reservas.
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="fas fa-save me-2"></i>Guardar Cambios
+                            </button>
+                            <a href="/admin" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Volver al Panel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

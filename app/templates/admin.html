@@ -1,13 +1,152 @@
 {% extends "base.html" %}
-{% block title %}Panel Admin{% endblock %}
+{% block title %}Panel de Administración{% endblock %}
 {% block content %}
-<h2>Panel Admin</h2>
-<table class="table">
-  <thead><tr><th>ID</th><th>Origen</th><th>Destino</th><th>Precio</th><th>Asientos</th></tr></thead>
-  <tbody>
-    {% for v in vuelos %}
-      <tr><td>{{ v.id }}</td><td>{{ v.origen }}</td><td>{{ v.destino }}</td><td>{{ v.precio }}</td><td>{{ v.asientos_disponibles }}</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div class="container mt-4">
+    <!-- Mensajes de éxito/error -->
+    {% if request.query_params.get('success') %}
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle me-2"></i>
+        {% if request.query_params.get('success') == 'vuelo_creado' %}
+            Vuelo creado exitosamente
+        {% elif request.query_params.get('success') == 'vuelo_actualizado' %}
+            Vuelo actualizado exitosamente
+        {% elif request.query_params.get('success') == 'vuelo_eliminado' %}
+            Vuelo eliminado exitosamente
+        {% endif %}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>Panel de Administración
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card text-center bg-light">
+                                <div class="card-body">
+                                    <i class="fas fa-plane fa-3x text-primary mb-3"></i>
+                                    <h4>{{ vuelos|length }}</h4>
+                                    <p>Vuelos Activos</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="/vuelos/crear" class="text-decoration-none">
+                                <div class="card text-center bg-success text-white">
+                                    <div class="card-body">
+                                        <i class="fas fa-plus-circle fa-3x mb-3"></i>
+                                        <h5>Crear Vuelo</h5>
+                                        <p>Añadir nueva ruta</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-center bg-info text-white">
+                                <div class="card-body">
+                                    <i class="fas fa-users fa-3x mb-3"></i>
+                                    <h5>Gestión</h5>
+                                    <p>Ver estadísticas</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Gestión de Vuelos
+                    </h4>
+                    <a href="/vuelos/crear" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus me-1"></i>Nuevo Vuelo
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Ruta</th>
+                                    <th>Aerolínea</th>
+                                    <th>Precio</th>
+                                    <th>Asientos</th>
+                                    <th>Estado</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for vuelo in vuelos %}
+                                <tr>
+                                    <td><strong>#{{ vuelo.id }}</strong></td>
+                                    <td>
+                                        <i class="fas fa-plane-departure text-primary"></i> {{ vuelo.origen }}
+                                        <i class="fas fa-arrow-right mx-1"></i>
+                                        <i class="fas fa-plane-arrival text-success"></i> {{ vuelo.destino }}
+                                    </td>
+                                    <td>{{ vuelo.aerolinea }}</td>
+                                    <td><strong class="text-success">${{ vuelo.precio }}</strong></td>
+                                    <td>
+                                        <span class="badge bg-{% if vuelo.asientos_disponibles > 20 %}success{% elif vuelo.asientos_disponibles > 10 %}warning{% else %}danger{% endif %}">
+                                            {{ vuelo.asientos_disponibles }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if vuelo.activo %}
+                                        <span class="badge bg-success">Activo</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Inactivo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <!-- Botón Editar -->
+                                            <a href="/vuelos/editar/{{ vuelo.id }}" 
+                                               class="btn btn-sm btn-warning" 
+                                               title="Editar vuelo">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            
+                                            <!-- Botón Activar/Desactivar -->
+                                            <form method="post" action="/vuelos/activar/{{ vuelo.id }}" class="d-inline">
+                                                <button type="submit" 
+                                                        class="btn btn-sm btn-{% if vuelo.activo %}secondary{% else %}success{% endif %}"
+                                                        title="{% if vuelo.activo %}Desactivar{% else %}Activar{% endif %} vuelo">
+                                                    <i class="fas fa-{% if vuelo.activo %}pause{% else %}play{% endif %}"></i>
+                                                </button>
+                                            </form>
+                                            
+                                            <!-- Botón Eliminar -->
+                                            <form method="post" action="/vuelos/eliminar/{{ vuelo.id }}" class="d-inline">
+                                                <button type="submit" 
+                                                        class="btn btn-sm btn-danger" 
+                                                        onclick="return confirm('⚠️ ¿Estás seguro de eliminar este vuelo?\n\nEsta acción no se puede deshacer y afectará las reservas existentes.')"
+                                                        title="Eliminar vuelo">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

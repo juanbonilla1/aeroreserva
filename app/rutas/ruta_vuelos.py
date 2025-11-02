@@ -24,7 +24,8 @@ def obtener_usuario_actual(request: Request):
     
     db = SessionLocal()
     try:
-        return db.query(Usuario).filter(Usuario.id == user_id).first()
+        usuario = db.query(Usuario).filter(Usuario.id == user_id).first()
+        return usuario
     finally:
         db.close()
 
@@ -56,7 +57,6 @@ async def listar_vuelos(request: Request):
 
 @router.get("/crear", response_class=HTMLResponse)
 async def crear_vuelo_get(request: Request):
-    # Solo admins pueden crear vuelos
     if not es_admin(request):
         return RedirectResponse(url="/vuelos", status_code=302)
     
@@ -79,7 +79,6 @@ async def crear_vuelo_post(
     duracion: str = Form("1h 30m"),
     asientos: int = Form(100)
 ):
-    # Solo admins pueden crear vuelos
     if not es_admin(request):
         return RedirectResponse(url="/vuelos", status_code=302)
     
@@ -99,13 +98,63 @@ async def crear_vuelo_post(
         )
         db.add(vuelo)
         db.commit()
-        return RedirectResponse(url="/admin", status_code=302)
+        return RedirectResponse(url="/admin?success=vuelo_creado", status_code=302)
+    except Exception as e:
+        print(f"Error al crear vuelo: {e}")
+        return RedirectResponse(url="/admin?error=error_crear", status_code=302)
     finally:
         db.close()
 
-@router.post("/eliminar")
-async def eliminar_vuelo(request: Request, id: int = Form(...)):
-    # Solo admins pueden eliminar vuelos
+@router.get("/editar/{vuelo_id}", response_class=HTMLResponse)
+async def editar_vuelo_get(vuelo_id: int, request: Request):
+    """Mostrar formulario para editar un vuelo"""
+    from app.modelos.modelos_base import SessionLocal
+    from app.modelos.vuelo import Vuelo
+    
+    # Verificar que sea admin
+    if not es_admin(request):
+        return RedirectResponse(url="/vuelos", status_code=302)
+    
+    db = SessionLocal()
+    try:
+        # Obtener el vuelo
+        vuelo = db.query(Vuelo).filter(Vuelo.id == vuelo_id).first()
+        
+        if not vuelo:
+            return RedirectResponse(url="/admin?error=vuelo_no_existe", status_code=302)
+        
+        # Obtener usuario actual
+        usuario = obtener_usuario_actual(request)
+        
+        # Renderizar template con TODOS los datos
+        return templates.TemplateResponse(
+            "editar_vuelo.html",
+            {
+                "request": request,
+                "vuelo": vuelo,
+                "usuario": usuario
+            }
+        )
+    except Exception as e:
+        print(f"Error al cargar formulario de edición: {e}")
+        import traceback
+        traceback.print_exc()
+        return RedirectResponse(url="/admin?error=error_cargar", status_code=302)
+    finally:
+        db.close()
+
+@router.post("/editar/{vuelo_id}")
+async def editar_vuelo_post(
+    vuelo_id: int,
+    request: Request,
+    origen: str = Form(...),
+    destino: str = Form(...),
+    aerolinea: str = Form(...),
+    precio: int = Form(...),
+    duracion: str = Form(...),
+    asientos: int = Form(...)
+):
+    """Procesar la edición de un vuelo"""
     if not es_admin(request):
         return RedirectResponse(url="/vuelos", status_code=302)
     
@@ -114,10 +163,74 @@ async def eliminar_vuelo(request: Request, id: int = Form(...)):
     
     db = SessionLocal()
     try:
-        vuelo = db.query(Vuelo).filter(Vuelo.id == id).first()
+        vuelo = db.query(Vuelo).filter(Vuelo.id == vuelo_id).first()
+        
+        if not vuelo:
+            return RedirectResponse(url="/admin?error=vuelo_no_existe", status_code=302)
+        
+        # Actualizar campos
+        vuelo.origen = origen
+        vuelo.destino = destino
+        vuelo.aerolinea = aerolinea
+        vuelo.precio = precio
+        vuelo.duracion = duracion
+        vuelo.asientos_disponibles = asientos
+        
+        db.commit()
+        return RedirectResponse(url="/admin?success=vuelo_actualizado", status_code=302)
+    except Exception as e:
+        print(f"Error al editar vuelo: {e}")
+        db.rollback()
+        return RedirectResponse(url="/admin?error=error_editar", status_code=302)
+    finally:
+        db.close()
+
+@router.post("/eliminar/{vuelo_id}")
+async def eliminar_vuelo(vuelo_id: int, request: Request):
+    """Eliminar un vuelo permanentemente"""
+    if not es_admin(request):
+        return RedirectResponse(url="/vuelos", status_code=302)
+    
+    from app.modelos.modelos_base import SessionLocal
+    from app.modelos.vuelo import Vuelo
+    
+    db = SessionLocal()
+    try:
+        vuelo = db.query(Vuelo).filter(Vuelo.id == vuelo_id).first()
         if vuelo:
             db.delete(vuelo)
             db.commit()
-        return RedirectResponse(url="/admin", status_code=302)
+            return RedirectResponse(url="/admin?success=vuelo_eliminado", status_code=302)
+        else:
+            return RedirectResponse(url="/admin?error=vuelo_no_existe", status_code=302)
+    except Exception as e:
+        print(f"Error al eliminar vuelo: {e}")
+        db.rollback()
+        return RedirectResponse(url="/admin?error=error_eliminar", status_code=302)
+    finally:
+        db.close()
+
+@router.post("/activar/{vuelo_id}")
+async def activar_vuelo(vuelo_id: int, request: Request):
+    """Activar o desactivar un vuelo sin eliminarlo"""
+    if not es_admin(request):
+        return RedirectResponse(url="/vuelos", status_code=302)
+    
+    from app.modelos.modelos_base import SessionLocal
+    from app.modelos.vuelo import Vuelo
+    
+    db = SessionLocal()
+    try:
+        vuelo = db.query(Vuelo).filter(Vuelo.id == vuelo_id).first()
+        if vuelo:
+            vuelo.activo = not vuelo.activo  # Alternar estado
+            db.commit()
+            return RedirectResponse(url="/admin?success=estado_cambiado", status_code=302)
+        else:
+            return RedirectResponse(url="/admin?error=vuelo_no_existe", status_code=302)
+    except Exception as e:
+        print(f"Error al cambiar estado: {e}")
+        db.rollback()
+        return RedirectResponse(url="/admin?error=error_estado", status_code=302)
     finally:
         db.close()
